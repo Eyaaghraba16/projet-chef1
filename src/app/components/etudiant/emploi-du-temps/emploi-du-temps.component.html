@@ -1,0 +1,33 @@
+<div class="page-container">
+  <header class="page-header">
+    <button (click)="retour()" class="btn-back">← Retour</button>
+    <h1>Emploi du temps - ISET Tozeur</h1>
+  </header>
+
+  <div class="schedule-wrapper" *ngIf="!loading && !errorMessage">
+    <table class="emploi-table">
+      <thead>
+        <tr>
+          <th>Heures</th>
+          <th *ngFor="let jour of jours">{{ jour }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let slot of horaires">
+          <td class="horaire">{{ slot }}</td>
+          <td *ngFor="let jour of jours">
+            <div class="cours" *ngFor="let cours of getCours(jour, slot)">
+              <strong>{{ cours.matiere }}</strong><br />
+              <small>{{ cours.enseignant }}</small><br />
+              <span class="salle">{{ cours.salle }}</span>
+            </div>
+            <div *ngIf="getCours(jour, slot).length === 0">-</div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="loading" class="loading">Chargement...</div>
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+</div>

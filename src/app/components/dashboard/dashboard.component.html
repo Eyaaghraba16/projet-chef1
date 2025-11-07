@@ -1,0 +1,181 @@
+<div class="dashboard-container">
+  <!-- En-tête -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1>Plateforme de Gestion Universitaire</h1>
+      <div class="user-info">
+        <span class="user-name">{{ userName }}</span>
+        <span class="user-role">{{ currentUser?.role }}</span>
+        <button (click)="logout()" class="btn-logout">Déconnexion</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Menu principal selon le rôle -->
+  <main class="dashboard-main">
+    <h2>Bienvenue, {{ userName }} !</h2>
+    <p class="role-description">Vous êtes connecté en tant que <strong>{{ currentUser?.role }}</strong></p>
+
+    <!-- Menu pour ÉTUDIANT -->
+    <div *ngIf="currentUser?.role === 'etudiant'" class="menu-grid">
+      <div class="menu-card" (click)="navigateTo('emploi-du-temps')">
+        <div class="card-icon">📅</div>
+        <h3>Emploi du temps</h3>
+        <p>Consulter votre emploi du temps</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('absences')">
+        <div class="card-icon">📋</div>
+        <h3>Absences</h3>
+        <p>Consulter vos absences et demander des excuses</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('notes')">
+        <div class="card-icon">📊</div>
+        <h3>Notes</h3>
+        <p>Accéder à vos notes et statistiques</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('notifications')">
+        <div class="card-icon">🔔</div>
+        <h3>Notifications</h3>
+        <p>Voir les notifications et alertes</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('messages')">
+        <div class="card-icon">💬</div>
+        <h3>Messagerie</h3>
+        <p>Échanger avec enseignants et administration</p>
+      </div>
+    </div>
+
+    <!-- Menu pour ENSEIGNANT -->
+    <div *ngIf="currentUser?.role === 'enseignant'" class="menu-grid">
+      <div class="menu-card" (click)="navigateTo('emploi-du-temps')">
+        <div class="card-icon">📅</div>
+        <h3>Emploi du temps</h3>
+        <p>Consulter votre emploi du temps</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('absences')">
+        <div class="card-icon">📋</div>
+        <h3>Mes absences</h3>
+        <p>Signaler vos absences</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('absences-etudiants')">
+        <div class="card-icon">✅</div>
+        <h3>Absences étudiants</h3>
+        <p>Valider/refuser les demandes d'absence</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('rattrapages')">
+        <div class="card-icon">🔄</div>
+        <h3>Rattrapages</h3>
+        <p>Proposer des séances de rattrapage</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('notifications')">
+        <div class="card-icon">🔔</div>
+        <h3>Notifications</h3>
+        <p>Voir les notifications</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('messages')">
+        <div class="card-icon">💬</div>
+        <h3>Messagerie</h3>
+        <p>Communiquer avec étudiants et administration</p>
+      </div>
+    </div>
+
+    <!-- Menu pour DIRECTEUR -->
+    <div *ngIf="currentUser?.role === 'directeur'" class="menu-grid">
+      <div class="menu-card" (click)="navigateTo('emploi-du-temps')">
+        <div class="card-icon">📅</div>
+        <h3>Emplois du temps</h3>
+        <p>Créer et modifier les emplois du temps</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('tableau-de-bord')">
+        <div class="card-icon">📊</div>
+        <h3>Tableau de bord</h3>
+        <p>Statistiques et indicateurs</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('absences')">
+        <div class="card-icon">📋</div>
+        <h3>Gestion absences</h3>
+        <p>Suivre les absences du département</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('rattrapages')">
+        <div class="card-icon">🔄</div>
+        <h3>Rattrapages</h3>
+        <p>Gérer les séances de rattrapage</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('matieres')">
+        <div class="card-icon">📚</div>
+        <h3>Matières</h3>
+        <p>Gérer les matières du département</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('messages')">
+        <div class="card-icon">💬</div>
+        <h3>Messagerie</h3>
+        <p>Communication interne</p>
+      </div>
+    </div>
+
+    <!-- Menu pour ADMINISTRATIF -->
+    <div *ngIf="currentUser?.role === 'administratif'" class="menu-grid">
+      <div class="menu-card" (click)="navigateTo('departements')">
+        <div class="card-icon">🏢</div>
+        <h3>Départements</h3>
+        <p>Gérer les départements</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('enseignants')">
+        <div class="card-icon">👨‍🏫</div>
+        <h3>Enseignants</h3>
+        <p>Gérer les enseignants</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('etudiants')">
+        <div class="card-icon">👨‍🎓</div>
+        <h3>Étudiants</h3>
+        <p>Gérer les étudiants</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('salles')">
+        <div class="card-icon">🚪</div>
+        <h3>Salles</h3>
+        <p>Gérer les salles</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('matieres')">
+        <div class="card-icon">📚</div>
+        <h3>Matières</h3>
+        <p>Gérer les matières</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('emploi-du-temps')">
+        <div class="card-icon">📅</div>
+        <h3>Emplois du temps</h3>
+        <p>Superviser tous les emplois du temps</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('rapports')">
+        <div class="card-icon">📄</div>
+        <h3>Rapports</h3>
+        <p>Générer des rapports institutionnels</p>
+      </div>
+
+      <div class="menu-card" (click)="navigateTo('evenements')">
+        <div class="card-icon">🎉</div>
+        <h3>Événements</h3>
+        <p>Gérer les événements institutionnels</p>
+      </div>
+    </div>
+  </main>
+</div>
