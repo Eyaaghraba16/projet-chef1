@@ -1,62 +1,84 @@
 const express = require('express');
 const router = express.Router();
-const { EmploiTemps } = require('../models/emploiTemps');
-const { Op } = require('sequelize');
+const pool = require('../db'); // ✅ on importe la connexion MySQL
 
-// GET emploi du temps pour un étudiant
+// 🧑‍🎓 GET emploi du temps pour un étudiant (par groupe)
 router.get('/student/:id', async (req, res) => {
   const idGroupe = req.params.id;
   try {
-    const emploi = await EmploiTemps.findAll({ where: { id_groupe: idGroupe } });
-    res.json(emploi);
+    const [rows] = await pool.query(
+      'SELECT * FROM emploi_temps WHERE id_groupe = ?',
+      [idGroupe]
+    );
+    res.json(rows);
   } catch (err) {
+    console.error('Erreur GET /student/:id =>', err);
     res.status(500).json({ message: 'Erreur serveur' });
   }
 });
 
-// POST ajouter une séance
+// ➕ POST ajouter une séance
 router.post('/', async (req, res) => {
-  const newSeance = req.body;
+  const { date, heure_debut, heure_fin, id_salle, id_enseignant, id_groupe, matiere } = req.body;
 
   try {
-    const conflit = await EmploiTemps.findOne({
-      where: {
-        date: newSeance.date,
-        heure_debut: { [Op.lt]: newSeance.heure_fin },
-        heure_fin: { [Op.gt]: newSeance.heure_debut },
-        [Op.or]: [
-          { id_salle: newSeance.id_salle },
-          { id_enseignant: newSeance.id_enseignant },
-          { id_groupe: newSeance.id_groupe }
-        ]
-      }
-    });
+    // Vérification de conflit
+    const [conflits] = await pool.query(
+      `SELECT * FROM emploi_temps 
+       WHERE date = ? 
+       AND heure_debut < ? 
+       AND heure_fin > ? 
+       AND (id_salle = ? OR id_enseignant = ? OR id_groupe = ?)`,
+      [date, heure_fin, heure_debut, id_salle, id_enseignant, id_groupe]
+    );
 
-    if (conflit) return res.status(400).json({ message: "Conflit détecté !" });
+    if (conflits.length > 0) {
+      return res.status(400).json({ message: "Conflit détecté !" });
+    }
 
-    const seance = await EmploiTemps.create(newSeance);
-    res.status(201).json(seance);
+    // Ajout de la séance
+    await pool.query(
+      `INSERT INTO emploi_temps (date, heure_debut, heure_fin, id_salle, id_enseignant, id_groupe, matiere)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [date, heure_debut, heure_fin, id_salle, id_enseignant, id_groupe, matiere]
+    );
+
+    res.status(201).json({ message: "Séance ajoutée avec succès" });
   } catch (err) {
+    console.error('Erreur POST /emploi-du-temps =>', err);
     res.status(500).json({ message: 'Erreur serveur' });
   }
 });
 
-// PUT modifier une séance
+// ✏️ PUT modifier une séance
 router.put('/:id', async (req, res) => {
+  const { date, heure_debut, heure_fin, id_salle, id_enseignant, id_groupe, matiere } = req.body;
+  const { id } = req.params;
+
   try {
-    await EmploiTemps.update(req.body, { where: { id: req.params.id } });
+    await pool.query(
+      `UPDATE emploi_temps 
+       SET date=?, heure_debut=?, heure_fin=?, id_salle=?, id_enseignant=?, id_groupe=?, matiere=? 
+       WHERE id=?`,
+      [date, heure_debut, heure_fin, id_salle, id_enseignant, id_groupe, matiere, id]
+    );
+
     res.json({ message: 'Séance modifiée' });
   } catch (err) {
+    console.error('Erreur PUT /emploi-du-temps/:id =>', err);
     res.status(500).json({ message: 'Erreur serveur' });
   }
 });
 
-// DELETE supprimer une séance
+// ❌ DELETE supprimer une séance
 router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+
   try {
-    await EmploiTemps.destroy({ where: { id: req.params.id } });
+    await pool.query('DELETE FROM emploi_temps WHERE id=?', [id]);
     res.json({ message: 'Séance supprimée' });
   } catch (err) {
+    console.error('Erreur DELETE /emploi-du-temps/:id =>', err);
     res.status(500).json({ message: 'Erreur serveur' });
   }
 });

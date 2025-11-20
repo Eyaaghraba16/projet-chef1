@@ -8,41 +8,91 @@ import { User } from '../models/user.model';
   providedIn: 'root'
 })
 export class AuthService {
+
   private apiUrl = 'http://localhost:3000/api/auth';
+
   private currentUserSubject: BehaviorSubject<User | null>;
   public currentUser: Observable<User | null>;
 
   constructor(private http: HttpClient) {
-    const userJson = localStorage.getItem('currentUser');
+
+    // Charger user depuis localStorage au chargement de l'app
+    const savedUser = localStorage.getItem('currentUser');
+
     this.currentUserSubject = new BehaviorSubject<User | null>(
-      userJson ? JSON.parse(userJson) : null
+      savedUser ? JSON.parse(savedUser) : null
     );
+
     this.currentUser = this.currentUserSubject.asObservable();
   }
 
+  // Getter pour obtenir l'utilisateur courant
   public get currentUserValue(): User | null {
     return this.currentUserSubject.value;
   }
 
+  // ===================== LOGIN =======================
   login(loginOrEmail: string, mot_de_passe: string): Observable<User> {
+
     loginOrEmail = loginOrEmail.trim().toLowerCase();
-    return this.http.post<any>(`${this.apiUrl}/login`, { loginOrEmail, mot_de_passe })
-      .pipe(map(response => {
-        if (response && response.token && response.user) {
-          localStorage.setItem('currentUser', JSON.stringify(response.user));
-          this.currentUserSubject.next(response.user as User);
+
+    return this.http.post<any>(`${this.apiUrl}/login`, {
+      loginOrEmail,
+      mot_de_passe
+    }).pipe(
+      map(response => {
+
+        if (!response?.user || !response?.token) {
+          throw new Error("Erreur lors du login : données manquantes.");
         }
-        return response.user as User;
-      }));
+
+        // ⚠️ Normalisation du rôle en minuscule
+        const userRole = (response.user.role || '').trim().toLowerCase();
+
+        const fullUser: User = {
+          ...response.user,
+          role: userRole,
+          token: response.token
+        };
+
+        // Sauvegarde
+        localStorage.setItem('currentUser', JSON.stringify(fullUser));
+
+        // Mise à jour du BehaviorSubject
+        this.currentUserSubject.next(fullUser);
+
+        return fullUser;
+      })
+    );
   }
 
+  // ===================== REGISTER =======================
   register(email: string, mot_de_passe: string, nom: string, prenom: string, role: string): Observable<any> {
+
     const login = email.split('@')[0].trim().toLowerCase();
-    return this.http.post(`${this.apiUrl}/register`, { login, email, mot_de_passe, nom, prenom, role });
+
+    return this.http.post(`${this.apiUrl}/register`, {
+      login,
+      email,
+      mot_de_passe,
+      nom,
+      prenom,
+      role: role.trim().toLowerCase()
+    });
   }
 
+  // ===================== LOGOUT =======================
   logout() {
     localStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
+  }
+
+  // ===================== CHECKS =======================
+  isLoggedIn(): boolean {
+    return !!this.currentUserValue?.token;
+  }
+
+  hasRole(role: string): boolean {
+    return this.currentUserValue?.role === role.trim().toLowerCase();
   }
 }

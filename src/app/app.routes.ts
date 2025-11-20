@@ -1,33 +1,144 @@
 import { Routes } from '@angular/router';
+
+// Home
+import { HomeComponent } from './components/home/home.component';
+
+// Auth
 import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
+
+// Dashboard
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+
+// Admin
+import { DepartementsComponent } from './components/admin/departements.component';
+import { EnseignantsComponent } from './components/admin/enseignants/enseignants.component';
+import { EtudiantsAdminComponent } from './components/admin/etudiants/etudiants-admin.component';
+import { SallesComponent } from './components/admin/salles/salles.component';
+import { MatieresComponent } from './components/admin/matieres/matieres.component';
+import { RapportsComponent } from './components/admin/rapports/rapports.component';
+import { EvenementsComponent } from './components/admin/evenements/evenements.component';
+
+// Emploi du temps
 import { EmploiDuTempsComponent } from './components/etudiant/emploi-du-temps/emploi-du-temps.component';
+import { EmploiDuTempsEtudiantComponent } from './components/etudiant/emploi-du-temps/emploi-du-temps-etudiant.component';
 
-// Routes de l'application
+// Étudiant
+import { AbsencesEtudiantComponent } from './components/etudiant/absences/absences.component';
+import { NotesEtudiantComponent } from './components/etudiant/notes/notes.component';
+import { NotificationsEtudiantComponent } from './components/etudiant/notifications/notifications.component';
+
+// Guard
+import { AuthGuard } from './guards/auth.guard';
+
 export const routes: Routes = [
-  // Route par défaut - redirection vers login
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
 
-  // Authentification
+  { path: '', component: HomeComponent },
+  { path: 'home', component: HomeComponent },
+
+  // ---------------- AUTH ----------------
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
 
-  // Dashboard principal
-  { path: 'dashboard', component: DashboardComponent },
+  // -------------- DASHBOARD --------------
+  {
+    path: 'dashboard',
+    component: DashboardComponent,
+    canActivate: [AuthGuard]
+  },
 
-  // Routes pour ÉTUDIANT
-  { path: 'etudiant/emploi-du-temps', component: EmploiDuTempsComponent },
+  // -------------- ADMIN (administratif) --------------
+  {
+    path: 'admin/departements',
+    component: DepartementsComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'administratif' }
+  },
+  {
+    path: 'admin/enseignants',
+    component: EnseignantsComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'administratif' }
+  },
+  {
+    path: 'admin/etudiants',
+    component: EtudiantsAdminComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'administratif' }
+  },
+  {
+    path: 'admin/salles',
+    component: SallesComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'administratif' }
+  },
+  {
+    path: 'admin/matieres',
+    component: MatieresComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'administratif' }
+  },
+  {
+    path: 'admin/rapports',
+    component: RapportsComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'administratif' }
+  },
+  {
+    path: 'admin/evenements',
+    component: EvenementsComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'administratif' }
+  },
 
-  // Routes pour ENSEIGNANT
-  { path: 'enseignant/emploi-du-temps', component: EmploiDuTempsComponent },
+  // -------- ÉTUDIANT --------
+  {
+    path: 'etudiant/emploi-du-temps',
+    component: EmploiDuTempsEtudiantComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'etudiant' }
+  },
+  {
+    path: 'etudiant/absences',
+    component: AbsencesEtudiantComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'etudiant' }
+  },
+  {
+    path: 'etudiant/notes',
+    component: NotesEtudiantComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'etudiant' }
+  },
+  {
+    path: 'etudiant/notifications',
+    component: NotificationsEtudiantComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'etudiant' }
+  },
 
-  // Routes pour DIRECTEUR
-  { path: 'directeur/emploi-du-temps', component: EmploiDuTempsComponent },
+  // -------- EMPLOI DU TEMPS (autres rôles) --------
 
-  // Routes pour ADMINISTRATIF
-  { path: 'administratif/emploi-du-temps', component: EmploiDuTempsComponent },
+  {
+    path: 'enseignant/emploi-du-temps',
+    component: EmploiDuTempsComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'enseignant' }
+  },
 
-  // Route 404 - redirection vers login
-  { path: '**', redirectTo: '/login' }
+  {
+    path: 'directeur/emploi-du-temps',
+    component: EmploiDuTempsComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'directeur' }
+  },
+
+  {
+    path: 'administratif/emploi-du-temps',
+    component: EmploiDuTempsComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'administratif' }  // 🔥 OK
+  },
+
+  { path: '**', redirectTo: '' }
 ];

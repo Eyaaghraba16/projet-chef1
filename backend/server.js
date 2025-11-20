@@ -3,6 +3,9 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 
+// Connexion MySQL via ton fichier db.js
+const pool = require('./db'); // ✅ on utilise ton pool existant
+
 // Importation des routes
 const authRoutes = require('./routes/auth');
 const emploiRoutes = require('./routes/emploi');
@@ -22,9 +25,19 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// ✅ Test de la connexion MySQL
+pool.getConnection()
+  .then(conn => {
+    console.log('✅ Connexion MySQL réussie');
+    conn.release();
+  })
+  .catch(err => {
+    console.error('❌ Erreur de connexion MySQL :', err);
+  });
+
 // Routes de l'API
 app.use('/api/auth', authRoutes);
-app.use('/api/emploi-du-temps', emploiRoutes); // ✅ Sprint 3
+app.use('/api/emploi-du-temps', emploiRoutes);
 app.use('/api/absences', absencesRoutes);
 app.use('/api/notes', notesRoutes);
 app.use('/api/notifications', notificationsRoutes);
@@ -34,7 +47,7 @@ app.use('/api', referentielsRoutes);
 
 // Route de test
 app.get('/', (req, res) => {
-  res.json({ message: 'Bienvenue sur l\'API de gestion universitaire' });
+  res.json({ message: "Bienvenue sur l'API de gestion universitaire" });
 });
 
 // Démarrage du serveur

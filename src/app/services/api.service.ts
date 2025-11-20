@@ -7,14 +7,13 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = 'http://localhost:3000/api'; // adapte selon ton backend
 
-  constructor(
-    private http: HttpClient,
-    private authService: AuthService
-  ) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
-  // Créer les headers avec le token d'authentification
+  // ============================================================
+  // 🔐 HEADERS AVEC TOKEN
+  // ============================================================
   private getHeaders(): HttpHeaders {
     const user = this.authService.currentUserValue;
     return new HttpHeaders({
@@ -23,71 +22,174 @@ export class ApiService {
     });
   }
 
-  // -------------------- EMPLOI DU TEMPS --------------------
-  // Récupérer l'emploi du temps pour l'étudiant connecté
-  getEmploiDuTemps(etudiantId?: number): Observable<any> {
-    // Si pas d'ID fourni, récupérer l'ID de l'utilisateur connecté
+  // ============================================================
+  // ⭐ MÉTHODES GÉNÉRIQUES
+  // ============================================================
+  get(url: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${url}`, { headers: this.getHeaders() });
+  }
+
+  post(url: string, body: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${url}`, body, { headers: this.getHeaders() });
+  }
+
+  put(url: string, body: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${url}`, body, { headers: this.getHeaders() });
+  }
+
+  delete(url: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${url}`, { headers: this.getHeaders() });
+  }
+
+  // ============================================================
+  // EMPLOI DU TEMPS
+  // ============================================================
+  getEmplois(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/emploi-du-temps`, { headers: this.getHeaders() });
+  }
+
+  getEmploiDuTemps(etudiantId?: number): Observable<any[]> {
     const id = etudiantId || this.authService.currentUserValue?.id;
-    return this.http.get(`${this.apiUrl}/emploi-du-temps/student/${id}`, { headers: this.getHeaders() });
+    return this.http.get<any[]>(`${this.apiUrl}/emploi-du-temps/student/${id}`, { headers: this.getHeaders() });
   }
 
-  // Ajouter une séance (optionnel, pour admin)
-  addSeance(seance: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/emploi-du-temps`, seance, { headers: this.getHeaders() });
+  ajouterEmploi(emploi: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/emploi-du-temps`, emploi, { headers: this.getHeaders() });
   }
 
-  // Modifier une séance
-  updateSeance(id: number, seance: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/emploi-du-temps/${id}`, seance, { headers: this.getHeaders() });
-  }
-
-  // Supprimer une séance
-  deleteSeance(id: number): Observable<any> {
+  supprimerEmploi(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/emploi-du-temps/${id}`, { headers: this.getHeaders() });
   }
 
-  // -------------------- AUTRES SERVICES --------------------
-  getAbsences(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/absences`, { headers: this.getHeaders() });
+  // ============================================================
+  // ABSENCES
+  // ============================================================
+  getAbsences(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/absences`, { headers: this.getHeaders() });
   }
 
   signalerAbsence(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/absences`, data, { headers: this.getHeaders() });
   }
 
-  getNotes(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/notes`, { headers: this.getHeaders() });
+  demanderExcuse(absenceId: number, motif: { motif: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/absences/${absenceId}/excuse`, motif, { headers: this.getHeaders() });
   }
 
-  getNotifications(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/notifications`, { headers: this.getHeaders() });
+  // ============================================================
+  // NOTES
+  // ============================================================
+  getNotes(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/notes`, { headers: this.getHeaders() });
   }
 
-  getRattrapages(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/rattrapages`, { headers: this.getHeaders() });
+  // ============================================================
+  // NOTIFICATIONS
+  // ============================================================
+  getNotifications(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/notifications`, { headers: this.getHeaders() });
+  }
+
+  // ============================================================
+  // RATTRAPAGES
+  // ============================================================
+  getRattrapages(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/rattrapages`, { headers: this.getHeaders() });
   }
 
   proposerRattrapage(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/rattrapages`, data, { headers: this.getHeaders() });
   }
 
-  getMessages(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/messages`, { headers: this.getHeaders() });
+  // ============================================================
+  // MESSAGES
+  // ============================================================
+  getMessages(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/messages`, { headers: this.getHeaders() });
   }
 
   envoyerMessage(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/messages`, data, { headers: this.getHeaders() });
   }
 
-  getDepartements(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/departements`, { headers: this.getHeaders() });
+  // ============================================================
+  // DEPARTEMENTS
+  // ============================================================
+  getDepartements(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/departements`, { headers: this.getHeaders() });
   }
 
-  getMatieres(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/matieres`, { headers: this.getHeaders() });
+  ajouterDepartement(departement: { nom: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/departements`, departement, { headers: this.getHeaders() });
   }
 
-  getSalles(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/salles`, { headers: this.getHeaders() });
+  supprimerDepartement(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/departements/${id}`, { headers: this.getHeaders() });
+  }
+
+  // ============================================================
+  // MATIERES
+  // ============================================================
+  getMatieres(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/matieres`, { headers: this.getHeaders() });
+  }
+
+  ajouterMatiere(matiere: { nom: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/matieres`, matiere, { headers: this.getHeaders() });
+  }
+
+  supprimerMatiere(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/matieres/${id}`, { headers: this.getHeaders() });
+  }
+
+  // ============================================================
+  // SALLES
+  // ============================================================
+  getSalles(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/salles`, { headers: this.getHeaders() });
+  }
+
+  ajouterSalle(salle: { nom: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/salles`, salle, { headers: this.getHeaders() });
+  }
+
+  supprimerSalle(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/salles/${id}`, { headers: this.getHeaders() });
+  }
+
+  // ============================================================
+  // RAPPORTS
+  // ============================================================
+  getRapports(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/rapports`, { headers: this.getHeaders() });
+  }
+
+  downloadRapportPdf(rapportId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/rapports/${rapportId}/pdf`, {
+      headers: this.getHeaders(),
+      responseType: 'blob'
+    });
+  }
+
+  downloadRapportCsv(rapportId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/rapports/${rapportId}/csv`, {
+      headers: this.getHeaders(),
+      responseType: 'blob'
+    });
+  }
+
+  // ============================================================
+  // ÉVÉNEMENTS
+  // ============================================================
+  getEvenements(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/evenements`, { headers: this.getHeaders() });
+  }
+
+  addEvenement(evenement: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/evenements`, evenement, { headers: this.getHeaders() });
+  }
+
+  deleteEvenement(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/evenements/${id}`, { headers: this.getHeaders() });
   }
 }

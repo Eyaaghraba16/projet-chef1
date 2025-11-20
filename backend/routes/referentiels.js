@@ -1,54 +1,64 @@
 const express = require('express');
 const router = express.Router();
-const verifyToken = require('../middleware/auth');
+const pool = require('../db');
 
-// Données d'exemple pour les référentiels
-
-// Départements
-const departements = [
-  { id: 1, nom: 'Technologies de l\'Information', code: 'TI' },
-  { id: 2, nom: 'Génie Civil', code: 'GC' },
-  { id: 3, nom: 'Génie Mécanique', code: 'GM' }
-];
-
-// Matières
-const matieres = [
-  { id: 1, nom: 'Programmation Web', code: 'PW', departementId: 1 },
-  { id: 2, nom: 'Base de données', code: 'BD', departementId: 1 },
-  { id: 3, nom: 'Réseaux informatiques', code: 'RI', departementId: 1 }
-];
-
-// Salles
-const salles = [
-  { id: 1, nom: 'Salle 101', capacite: 30, type: 'Cours' },
-  { id: 2, nom: 'Salle 203', capacite: 25, type: 'TD' },
-  { id: 3, nom: 'Lab 1', capacite: 20, type: 'TP' }
-];
-
-// GET - Départements
-router.get('/departements', verifyToken, (req, res) => {
+// ==========================
+// 🔹 DEPARTEMENTS
+// ==========================
+router.get('/departements', async (req, res) => {
   try {
-    res.json(departements);
-  } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la récupération des départements' });
+    const [rows] = await pool.query('SELECT * FROM departements');
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur lors du chargement des départements' });
   }
 });
 
-// GET - Matières
-router.get('/matieres', verifyToken, (req, res) => {
+router.post('/departements', async (req, res) => {
   try {
-    res.json(matieres);
-  } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la récupération des matières' });
+    const { nom } = req.body;
+    if (!nom) return res.status(400).json({ message: 'Nom requis' });
+
+    const [result] = await pool.query('INSERT INTO departements (nom) VALUES (?)', [nom]);
+    res.json({ id: result.insertId, nom });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur lors de l\'ajout du département' });
   }
 });
 
-// GET - Salles
-router.get('/salles', verifyToken, (req, res) => {
+// ==========================
+// 🔹 ETUDIANTS
+// ==========================
+router.get('/etudiants', async (req, res) => {
   try {
-    res.json(salles);
-  } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la récupération des salles' });
+    const [rows] = await pool.query(`
+      SELECT e.*, d.nom AS departement
+      FROM etudiants e
+      LEFT JOIN departements d ON e.departement_id = d.id
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur lors du chargement des étudiants' });
+  }
+});
+
+router.post('/etudiants', async (req, res) => {
+  try {
+    const { nom, prenom, email, departement_id } = req.body;
+    if (!nom || !prenom || !email || !departement_id)
+      return res.status(400).json({ message: 'Tous les champs sont requis' });
+
+    const [result] = await pool.query(
+      'INSERT INTO etudiants (nom, prenom, email, departement_id) VALUES (?, ?, ?, ?)',
+      [nom, prenom, email, departement_id]
+    );
+    res.json({ id: result.insertId, nom, prenom, email, departement_id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur lors de l\'ajout de l\'étudiant' });
   }
 });
 

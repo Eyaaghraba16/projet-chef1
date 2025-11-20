@@ -22,8 +22,10 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'Email ou login déjà utilisé' });
     }
 
+    // Hash du mot de passe
     const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
 
+    // Insertion dans la table utilisateurs
     const [result] = await pool.query(
       `INSERT INTO utilisateurs (nom, prenom, email, login, mot_de_passe, role, actif)
        VALUES (?, ?, ?, ?, ?, ?, 1)`,
@@ -32,15 +34,16 @@ router.post('/register', async (req, res) => {
 
     const userId = result.insertId;
 
+    // Insertion selon le rôle
     if (role === 'etudiant') {
       await pool.query(
-        `INSERT INTO etudiants (id_utilisateur, id_groupe, id_specialite, date_creation)
-         VALUES (?, 1, 1, NOW())`,
+        `INSERT INTO etudiants (id_utilisateur, id_groupe, date_creation)
+         VALUES (?, 1, NOW())`,
         [userId]
       );
     } else if (role === 'enseignant') {
       await pool.query(
-        `INSERT INTO enseignants (id_utilisateur, id_specialite, date_creation)
+        `INSERT INTO enseignants (id_utilisateur, id_departement, date_creation)
          VALUES (?, 1, NOW())`,
         [userId]
       );
@@ -90,7 +93,7 @@ router.post('/login', async (req, res) => {
         prenom: user.prenom,
         email: user.email,
         login: user.login,
-        role: user.role // doit être "etudiant", "enseignant", "directeur" ou "administratif"
+        role: user.role
       }
     });
   } catch (error) {

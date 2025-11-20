@@ -37,7 +37,44 @@ export class DashboardComponent implements OnInit {
   }
 
   navigateTo(page: string) {
-    const role = this.currentUser?.role;
+    if (!this.currentUser) return;
+
+    const role = this.currentUser.role;
+
+    // 🔥 Cas spécial : ADMINISTRATIF
+    if (role === 'administratif') {
+      switch (page) {
+        case 'departements':
+          this.router.navigate(['/admin/departements']);
+          break;
+        case 'enseignants':
+          this.router.navigate(['/admin/enseignants']);
+          break;
+        case 'etudiants':
+          this.router.navigate(['/admin/etudiants']);
+          break;
+        case 'salles':
+          this.router.navigate(['/admin/salles']);
+          break;
+        case 'matieres':
+          this.router.navigate(['/admin/matieres']);
+          break;
+        case 'emploi-du-temps':
+          this.router.navigate(['/administratif/emploi-du-temps']);
+          break;
+        case 'rapports':
+          this.router.navigate(['/admin/rapports']);
+          break;
+        case 'evenements':
+          this.router.navigate(['/admin/evenements']);
+          break;
+        default:
+          this.router.navigate(['/dashboard']);
+      }
+      return;
+    }
+
+    // 🔥 Tous les autres rôles
     this.router.navigate([`/${role}/${page}`]);
   }
 }

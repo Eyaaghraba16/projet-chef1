@@ -1,33 +1,45 @@
-<div class="page-container">
-  <header class="page-header">
-    <button (click)="retour()" class="btn-back">← Retour</button>
-    <h1>Emploi du temps - ISET Tozeur</h1>
-  </header>
+<div class="emploi-container">
+  <h2>📅 Gestion des Emplois du Temps</h2>
 
-  <div class="schedule-wrapper" *ngIf="!loading && !errorMessage">
-    <table class="emploi-table">
-      <thead>
-        <tr>
-          <th>Heures</th>
-          <th *ngFor="let jour of jours">{{ jour }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let slot of horaires">
-          <td class="horaire">{{ slot }}</td>
-          <td *ngFor="let jour of jours">
-            <div class="cours" *ngFor="let cours of getCours(jour, slot)">
-              <strong>{{ cours.matiere }}</strong><br />
-              <small>{{ cours.enseignant }}</small><br />
-              <span class="salle">{{ cours.salle }}</span>
-            </div>
-            <div *ngIf="getCours(jour, slot).length === 0">-</div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <div *ngIf="message" class="message">{{ message }}</div>
 
-  <div *ngIf="loading" class="loading">Chargement...</div>
-  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+  <form (ngSubmit)="ajouterEmploi()">
+    <input type="text" [(ngModel)]="matiere" name="matiere" placeholder="Matière" required />
+    <input type="text" [(ngModel)]="enseignant" name="enseignant" placeholder="Enseignant" required />
+    <input type="text" [(ngModel)]="salle" name="salle" placeholder="Salle" required />
+    <input type="text" [(ngModel)]="jour" name="jour" placeholder="Jour" required />
+    <input type="text" [(ngModel)]="heure" name="heure" placeholder="Heure" required />
+    <button type="submit">Ajouter</button>
+  </form>
+
+  <table *ngIf="emplois.length > 0; else vide">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Matière</th>
+        <th>Enseignant</th>
+        <th>Salle</th>
+        <th>Jour</th>
+        <th>Heure</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let e of emplois">
+        <td>{{ e.id }}</td>
+        <td>{{ e.matiere }}</td>
+        <td>{{ e.enseignant }}</td>
+        <td>{{ e.salle }}</td>
+        <td>{{ e.jour }}</td>
+        <td>{{ e.heure }}</td>
+        <td>
+          <button (click)="supprimerEmploi(e.id)">🗑️ Supprimer</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #vide>
+    <p>Aucun emploi du temps trouvé.</p>
+  </ng-template>
 </div>
